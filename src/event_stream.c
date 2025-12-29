@@ -456,6 +456,7 @@ static void event_stream_event_render(event_stream_event_t *event)
                 EVENT_EXTRA_KEY_URI,
                 EVENT_EXTRA_KEY_SOURCE_MEDIA_TYPE,
                 EVENT_EXTRA_KEY_SOURCE_INSTANCE_UUID,
+                EVENT_EXTRA_KEY_SOURCE_LISTENER_COUNT,
                 EVENT_EXTRA_KEY_CONNECTION_IP,
                 EVENT_EXTRA_KEY_CLIENT_ROLE,
                 EVENT_EXTRA_KEY_CLIENT_USERNAME,

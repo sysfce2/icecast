@@ -71,6 +71,15 @@ static void extra_add(event_t *event, event_extra_key_t key, const char *value)
     }
 }
 
+static void extra_add_number(event_t *event, event_extra_key_t key, intmax_t value)
+{
+    char buf[64];
+
+    snprintf(buf, sizeof(buf), "%lli", (long long int)value);
+
+    extra_add(event, key, buf);
+}
+
 const char * event_extra_get(const event_t *event, const event_extra_key_t key)
 {
     size_t i;
@@ -96,6 +105,7 @@ const char * event_extra_key_name(event_extra_key_t key)
         case EVENT_EXTRA_KEY_CLIENT_USERAGENT: return "client-useragent"; break;
         case EVENT_EXTRA_KEY_SOURCE_MEDIA_TYPE: return "source-media-type"; break;
         case EVENT_EXTRA_KEY_SOURCE_INSTANCE_UUID: return "source-instance"; break;
+        case EVENT_EXTRA_KEY_SOURCE_LISTENER_COUNT: return "source-listener-count"; break;
         case EVENT_EXTRA_KEY_DUMPFILE_FILENAME: return "dumpfile-filename"; break;
 #ifndef DEVEL_LOGGING
         default: break;
@@ -111,6 +121,7 @@ igloo_error_t event_to_string_renderer(const event_t *event, string_renderer_t *
         EVENT_EXTRA_KEY_URI,
         EVENT_EXTRA_KEY_SOURCE_MEDIA_TYPE,
         EVENT_EXTRA_KEY_SOURCE_INSTANCE_UUID,
+        EVENT_EXTRA_KEY_SOURCE_LISTENER_COUNT,
         EVENT_EXTRA_KEY_CONNECTION_IP,
         EVENT_EXTRA_KEY_CLIENT_ROLE,
         EVENT_EXTRA_KEY_CLIENT_USERNAME,
@@ -505,6 +516,7 @@ void event_emit_va(const char *trigger, ...) {
             extra_add(event, EVENT_EXTRA_KEY_SOURCE_MEDIA_TYPE, source->format->contenttype);
         }
         extra_add(event, EVENT_EXTRA_KEY_SOURCE_INSTANCE_UUID, source->instance_uuid);
+        extra_add_number(event, EVENT_EXTRA_KEY_SOURCE_LISTENER_COUNT, source->listeners);
     }
 
     if (client) {
