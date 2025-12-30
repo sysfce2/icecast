@@ -939,6 +939,7 @@ static inline xmlNodePtr __add_listener(client_t        *client,
 
     if (client->con) {
         connection_t *con = client->con;
+        const char *sock;
 
         if (*con->geoip.iso_3166_1_alpha_2 || con->geoip.have_latitude || con->geoip.have_longitude) {
             xmlNodePtr geoip = xmlNewChild(node, NULL, XMLSTR("geoip"), NULL);
@@ -959,6 +960,14 @@ static inline xmlNodePtr __add_listener(client_t        *client,
                 }
             }
         }
+
+        sock = listensocket_get_listener(con->listensocket_real)->id;
+        if (sock)
+            xmlNewTextChild(node, NULL, XMLSTR("listensocketreal"), XMLSTR(sock));
+
+        sock = listensocket_get_listener(con->listensocket_effective)->id;
+        if (sock)
+            xmlNewTextChild(node, NULL, XMLSTR("listensocketeffective"), XMLSTR(sock));
     }
 
     do {
@@ -1565,6 +1574,11 @@ static void command_list_listen_sockets(client_t *client, source_t *source, admi
         reportxml_helper_add_value_enum(resource, "family", sock_family_to_string(listensocket_get_family(sockets[i])));
         reportxml_helper_add_value_string(resource, "id", listener->id);
         reportxml_helper_add_value_string(resource, "on_behalf_of", listener->on_behalf_of);
+        reportxml_helper_add_value_string(config, "client_address", listener->client_address);
+        reportxml_helper_add_value_string(config, "client_ip", listener->client_ip);
+
+        for (size_t i = 0; i < (sizeof(listener->trusted_proxy)/sizeof(listener->trusted_proxy[0])); i++)
+            reportxml_helper_add_value_string(config, "trusted_proxy", listener->trusted_proxy[i]);
 
         if (listener->port > 0) {
             reportxml_helper_add_value_int(config, "port", listener->port);
