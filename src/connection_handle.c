@@ -688,6 +688,27 @@ static void _handle_authentication(client_t *client)
     _handle_authentication_listen_socket(client);
 }
 
+static bool check_trusted_proxy(const listener_t **listener, listensocket_t **sock, const char *c)
+{
+    for (size_t i = 0; i < (sizeof((*listener)->trusted_proxy)/sizeof((*listener)->trusted_proxy[0])); i++) {
+        if ((*listener)->trusted_proxy[i]) {
+            listensocket_t *cand = listensocket_container_get_by_id(global.listensockets, (*listener)->trusted_proxy[i]);
+            const listener_t * cand_listener = listensocket_get_listener(cand);
+
+            if (cand_listener->client_ip && strcmp(cand_listener->client_ip, c) == 0) {
+                refobject_unref(*sock);
+                *sock = cand;
+                *listener = cand_listener;
+                return true;
+            }
+
+            refobject_unref(cand);
+        }
+    }
+
+    return false;
+}
+
 void connection_handle_client(client_t *client)
 {
     http_parser_t *parser = client->parser;
@@ -700,6 +721,58 @@ void connection_handle_client(client_t *client)
         ICECAST_LOG_ERROR("Bad HTTP protocol detected");
         client_destroy(client);
         return;
+    }
+
+    {
+        const char *x_forwarded_for = httpp_getvar(parser, "x-forwarded-for");
+
+        if (x_forwarded_for) {
+            listensocket_t *sock = client->con->listensocket_effective;
+            const listener_t * listener = listensocket_get_listener(sock);
+
+            refobject_ref(sock);
+
+            if (check_trusted_proxy(&listener, &sock, client->con->ip)) {
+                char *p = strdup(x_forwarded_for);
+                char *n = p + strlen(p);
+                char *last_one = NULL;
+
+                while (n != p) {
+                    char *c;
+
+                    for (c = n; c != p && *c != ' '; c--);
+                    n = c;
+                    if (n != p) {
+                        c++;
+                        n--;
+                        if (*n != ',')
+                            continue;
+                        *n = 0;
+                    }
+
+                    if (util_check_valid_ip(c) < 1) {
+                        ICECAST_LOG_WARN("Proxy header contains bad IP: %s", c);
+                        break;
+                    }
+
+                    last_one = c;
+
+                    if (!check_trusted_proxy(&listener, &sock, c))
+                        break;
+                }
+
+                if (last_one) {
+                    free(client->con->ip);
+                    client->con->ip = strdup(last_one);
+                }
+
+                free(p);
+            }
+
+            refobject_unref(client->con->listensocket_effective);
+            client->con->listensocket_effective = sock;
+
+        }
     }
 
     upgrade = httpp_getvar(parser, "upgrade");

@@ -196,6 +196,9 @@ typedef struct _listener_t {
     char *bind_address;
     int shoutcast_compat;
     char *shoutcast_mount;
+    char *client_address; /* for display only */
+    char *client_ip;      /* for actual work */
+    char *trusted_proxy[8];
     tlsmode_t tls;
     auth_stack_t *authstack;
     /* additional HTTP headers */

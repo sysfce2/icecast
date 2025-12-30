@@ -31,6 +31,8 @@
 
 #ifndef _WIN32
 #include <sys/time.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #ifdef HAVE_POLL
@@ -173,6 +175,29 @@ int util_check_valid_extension(const char *uri) {
     }
 
     return UNKNOWN_CONTENT;
+}
+
+static inline int hex(char c)
+{
+    if(c >= '0' && c <= '9')
+        return c - '0';
+    else if(c >= 'A' && c <= 'F')
+        return c - 'A' + 10;
+    else if(c >= 'a' && c <= 'f')
+        return c - 'a' + 10;
+    else
+        return -1;
+}
+
+int util_check_valid_ip(const char *ip) {
+    if (inet_addr(ip) != INADDR_NONE)
+        return 1;
+
+    for (; *ip == ':' || hex(*ip) != -1; ip++);
+    if (*ip == 0)
+        return 1;
+
+    return 0;
 }
 
 static int verify_path(char *path) {

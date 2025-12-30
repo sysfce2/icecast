@@ -37,6 +37,7 @@
 #include "icecasttypes.h"
 #include <igloo/ro.h>
 
+#include "common/net/resolver.h"
 #include "cfgfile.h"
 #include "global.h"
 #include "logging.h"
@@ -898,10 +899,14 @@ listener_t *config_clear_listener(listener_t *listener)
         if (listener->id)               xmlFree(listener->id);
         if (listener->on_behalf_of)     free(listener->on_behalf_of);
         if (listener->bind_address)     xmlFree(listener->bind_address);
+        if (listener->client_address)   xmlFree(listener->client_address);
         if (listener->shoutcast_mount)  xmlFree(listener->shoutcast_mount);
         if (listener->authstack)        auth_stack_release(listener->authstack);
         if (listener->http_headers)     config_clear_http_header(listener->http_headers);
-        free (listener);
+        for (size_t i = 0; i < (sizeof(listener->trusted_proxy)/sizeof(listener->trusted_proxy[0])); i++)
+            free(listener->trusted_proxy[i]);
+        free(listener->client_ip);
+        free(listener);
     }
     return next;
 }
@@ -2363,6 +2368,46 @@ static void _parse_listen_socket(xmlDocPtr      doc,
                 xmlFree(listener->bind_address);
             listener->bind_address = (char *)xmlNodeListGetString(doc,
                 node->xmlChildrenNode, 1);
+        } else if (xmlStrcmp(node->name, XMLSTR("client-address")) == 0) {
+            xmlChar * address = xmlNodeListGetString(doc, node->xmlChildrenNode, 1);
+
+            if (address) {
+                char buf[128];
+                char *ip = resolver_getip((const char *)address, buf, sizeof(buf));
+
+                if (ip) {
+                    if (listener->client_ip)
+                        free(listener->client_ip);
+                    listener->client_ip = strdup(ip);
+                } else {
+                    ICECAST_LOG_ERROR("Cannot resolve client address: %#H", address);
+                }
+
+                if (listener->client_address)
+                    xmlFree(listener->client_address);
+                listener->client_address = (char*)address;
+            }
+        } else if (xmlStrcmp(node->name, XMLSTR("trusted-proxy")) == 0) {
+            xmlChar * address = xmlNodeListGetString(doc, node->xmlChildrenNode, 1);
+            if (address) {
+                char *proxy = config_href_to_id(configuration, node, (const char *)address);
+
+                if (proxy) {
+                    for (size_t i = 0; proxy && i < (sizeof(listener->trusted_proxy)/sizeof(listener->trusted_proxy[0])); i++) {
+                        if (!listener->trusted_proxy[i]) {
+                            listener->trusted_proxy[i] = proxy;
+                            proxy = NULL;
+                        }
+                    }
+
+                    if (proxy) {
+                        ICECAST_LOG_ERROR("No free slots in listen socket for adding thrusted proxy %#H", address);
+                        free(proxy);
+                    }
+                }
+
+                xmlFree(address);
+            }
         } else if (xmlStrcmp(node->name, XMLSTR("so-sndbuf")) == 0) {
             __read_int(configuration, doc, node, &listener->so_sndbuf, RANGE_SNDBUF);
         } else if (xmlStrcmp(node->name, XMLSTR("listen-backlog")) == 0) {
@@ -3225,9 +3270,17 @@ listener_t *config_copy_listener_one(const listener_t *listener) {
         n->on_behalf_of = strdup(listener->on_behalf_of);
     }
     n->bind_address = (char*)xmlStrdup(XMLSTR(listener->bind_address));
+    n->client_address = (char*)xmlStrdup(XMLSTR(listener->client_address));
+    if (listener->client_ip) {
+        n->client_ip = strdup(listener->client_ip);
+    }
     n->shoutcast_compat = listener->shoutcast_compat;
     n->shoutcast_mount = (char*)xmlStrdup(XMLSTR(listener->shoutcast_mount));
     n->tls = listener->tls;
+
+    for (size_t i = 0; i < (sizeof(listener->trusted_proxy)/sizeof(listener->trusted_proxy[0])); i++)
+        if (listener->trusted_proxy[i])
+            n->trusted_proxy[i] = strdup(listener->trusted_proxy[i]);
 
     if (listener->authstack) {
         auth_stack_addref(n->authstack = listener->authstack);
