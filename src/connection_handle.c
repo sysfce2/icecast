@@ -696,12 +696,14 @@ static bool check_trusted_proxy(const listener_t **listener, listensocket_t **so
             const listener_t * cand_listener = listensocket_get_listener(cand);
 
             if (cand_listener->client_ip && strcmp(cand_listener->client_ip, c) == 0) {
+                listensocket_release_listener(*sock);
                 refobject_unref(*sock);
                 *sock = cand;
                 *listener = cand_listener;
                 return true;
             }
 
+            listensocket_release_listener(cand);
             refobject_unref(cand);
         }
     }
@@ -769,9 +771,9 @@ void connection_handle_client(client_t *client)
                 free(p);
             }
 
+            listensocket_release_listener(sock);
             refobject_unref(client->con->listensocket_effective);
             client->con->listensocket_effective = sock;
-
         }
     }
 
