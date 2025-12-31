@@ -31,19 +31,6 @@ ls -la
 export OSC_CMD="${OSC_CMD:-$HOME/.local/bin/osc} --config=$OSC_RC_FILE"
 echo "Using ${OSC_CMD} for \$OSC_CMD, as $(id)"
 
-if echo "$CI_COMMIT_REF_NAME" | grep -E "^v?2.5.0-rc"; then
-  echo "manipulating stuff..."
-  export SUFFIX=`echo $ICECAST_VERSION | sed 's/.*\.\([0-9]*\)$/\1/'`
-  export FIXED_VERSION="2.5.0-rc$SUFFIX"
-  export FIXED_CI_VERSION=${FIXED_VERSION/-/+}
-
-  tar xfvz "icecast-$ICECAST_VERSION.tar.gz"
-  mv icecast-$ICECAST_VERSION icecast-$FIXED_VERSION
-  tar cfvz icecast-$FIXED_VERSION.tar.gz icecast-$FIXED_VERSION
-else
-  echo "no evil hack... ${CI_COMMIT_REF_NAME}"
-fi
-
 # Remember where we are
 export SOURCE=$PWD
 
@@ -66,12 +53,7 @@ for OBS_BASE in $OBS_BASES; do
 
   # Place the built archive in the source for OBS
   for i in "$ICECAST_PROJECT" "$W32_ICECAST_PROJECT" "$W64_ICECAST_INSTALLER_PROJECT" "$W64_ICECAST_PROJECT"; do
-      if [ -n "$SUFFIX" ]; then
-        echo "manipulating stuff..."
-        cp "$SOURCE/icecast-$FIXED_VERSION.tar.gz" "$i/icecast2_$FIXED_VERSION.orig.tar.gz"
-      else
-        cp "$SOURCE/icecast-$ICECAST_VERSION.tar.gz" "$i/icecast2_$ICECAST_CI_VERSION.orig.tar.gz"
-      fi
+    cp "$SOURCE/icecast-$ICECAST_VERSION.tar.gz" "$i/icecast2_$ICECAST_CI_VERSION.orig.tar.gz"
   done
 
   # we copy the spec for these projects - for the icecast project the spec is globeed
@@ -91,23 +73,11 @@ for OBS_BASE in $OBS_BASES; do
     popd
   else
     for i in "$ICECAST_PROJECT/$ICECAST_PROJECT.spec" "$W32_ICECAST_INSTALLER_PROJECT/$W32_ICECAST_INSTALLER_PROJECT.spec" "$W32_ICECAST_PROJECT/$W32_ICECAST_PROJECT.spec" "$W64_ICECAST_INSTALLER_PROJECT/$W64_ICECAST_INSTALLER_PROJECT.spec" "$W64_ICECAST_PROJECT/$W64_ICECAST_PROJECT.spec"; do
-      if [ -n "$SUFFIX" ]; then
-        echo "manipulating stuff..."
-        sed -i "s/_VERSION_ARCHIVE_/$FIXED_VERSION/;" "$i";
-        sed -i "s/Version: .*/Version: $FIXED_CI_VERSION/;" "$i";
-        sed -i "s/icecast2_%{version}/icecast2_%{version_archive}/" "$i";
-      else
-        sed -i "s/_VERSION_ARCHIVE_/$ICECAST_VERSION/;" "$i";
-      fi
+      sed -i "s/_VERSION_ARCHIVE_/$ICECAST_VERSION/;" "$i";
     done
   fi
 
-  if [ -n "$SUFFIX" ]; then
-    echo "manipulating stuff..."
-    tar -C "$ICECAST_PROJECT" -cvzf "$ICECAST_PROJECT/icecast2_$FIXED_VERSION-1.debian.tar.gz" debian/
-  else
-    tar -C "$ICECAST_PROJECT" -cvzf "$ICECAST_PROJECT/icecast2_$ICECAST_CI_VERSION-1.debian.tar.gz" debian/
-  fi
+  tar -C "$ICECAST_PROJECT" -cvzf "$ICECAST_PROJECT/icecast2_$ICECAST_CI_VERSION-1.debian.tar.gz" debian/
 
   # remove debian/ so it does not end up in the archive
   rm -rf "$ICECAST_PROJECT/debian"
@@ -116,14 +86,8 @@ for OBS_BASE in $OBS_BASES; do
 
   pushd "$ICECAST_PROJECT"
 
-  
-  if [ -n "$SUFFIX" ]; then
-    echo "manipulating stuff..."
-    ICECAST_CI_VERSION=$FIXED_VERSION "$SCRIPT_DIR/../fix-dsc.sh"
-  else
-    "$SCRIPT_DIR/../fix-dsc.sh"
-  fi
-  
+  "$SCRIPT_DIR/../fix-dsc.sh"
+
   popd
 
   # we use addremove to detect changes and commit them to the server
