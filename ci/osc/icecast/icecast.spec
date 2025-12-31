@@ -6,7 +6,7 @@
 %define version_archive _VERSION_ARCHIVE_
 Summary: Streaming media server
 Name: icecast
-Version: 2.5.0-rc2
+Version: 2.5.0
 Release: 1%{?dist}
 Group: Applications/Multimedia
 #because one way to say this is not enough...
@@ -180,6 +180,10 @@ fi
 %dir %attr(-,%{name},%{name}) %{_localstatedir}/log/icecast
 
 %changelog
+* Wed Dec 31 2025 Philipp Schafft <lion@lion.leolix.org> - 2.5.0-1
+- Preparing for 2.5.0
+
+
 * Sun Dec 14 2025 Philipp Schafft <lion@lion.leolix.org> - 2.5.0-rc2-1
 - Preparing for 2.5.0-rc2
 

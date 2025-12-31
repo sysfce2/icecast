@@ -6,7 +6,7 @@
 
 Summary:        Installer for MinGW Windows port of Icecast  streaming media server
 Name:           mingw64-icecast-installer
-Version:        2.5.0-rc2
+Version:        2.5.0
 Release:        2%{?dist}
 Group:          Applications/Multimedia
 License:        GPL-2.0
@@ -86,6 +86,10 @@ cp %_builddir/installer/icecast_win64_%{version}.zip "%{buildroot}/%{_mingw64_bi
 %{_mingw64_bindir}/icecast_win64_%{version}.zip
 
 %changelog
+* Wed Dec 31 2025 Philipp Schafft <lion@lion.leolix.org> - 2.5.0-1
+- Preparing for 2.5.0
+
+
 * Sun Dec 14 2025 Philipp Schafft <lion@lion.leolix.org> - 2.5.0-rc2-1
 - Preparing for 2.5.0-rc2
 

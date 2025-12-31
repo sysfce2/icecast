@@ -11,8 +11,8 @@ if [ "z$OBS_BASES" = "z" ]; then
   fi
 fi
 
-export ICECAST_VERSION=2.4.999.2
+export ICECAST_VERSION=2.5.0
 export ICECAST_CI_VERSION=${ICECAST_VERSION/-/+}
 export DISABLE_CHANGELOG=1
 export RELEASE_AUTHOR="Philipp Schafft <lion@lion.leolix.org>"
-export RELEASE_DATETIME=2025-12-14T21:02:47+00:00
+export RELEASE_DATETIME=2025-12-31T15:46:18+00:00
