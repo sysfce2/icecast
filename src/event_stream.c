@@ -81,6 +81,7 @@ static thread_type             *event_stream_thread;
 static cond_t                   event_stream_cond;
 static avl_tree                *client_tree;
 static bool                     alive;
+static bool                     initialised;
 
 static void event_stream_clientstate_free(client_t *client)
 {
@@ -148,10 +149,14 @@ void event_stream_initialise(void)
     thread_cond_create(&event_stream_cond);
     client_tree = avl_tree_new(client_compare, NULL);
     alive = true;
+    initialised = true;
 }
 
 void event_stream_shutdown(void)
 {
+    if (!initialised)
+        return;
+
     thread_mutex_lock(&event_stream_event_mutex);
     alive = false;
     thread_mutex_unlock(&event_stream_event_mutex);
