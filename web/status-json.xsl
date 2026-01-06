@@ -1,4 +1,10 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <!--
+        /!\ /status-json.xsl is deprecated since 2.5.x. This file is kept for compatibility with 2.4.x only.
+        Please migrate to /admin/publicstats and consider /admin/eventfeed.
+        No future non-security tickets for this file will be accepted.
+    -->
+
     <xsl:import href="xml2json.xslt"/>
     <xsl:output indent="no" omit-xml-declaration="yes" method="text" encoding="UTF-8" media-type="application/json"/>
     <xsl:strip-space elements="*"/>

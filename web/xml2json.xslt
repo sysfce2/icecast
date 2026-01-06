@@ -25,6 +25,12 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
+<!--
+  /!\ /status-json.xsl is deprecated since 2.5.x. This file is kept for compatibility with 2.4.x only.
+  Please migrate to /admin/publicstats and consider /admin/eventfeed.
+  No future non-security tickets for this file will be accepted.
+-->
+
   <xsl:output indent="no" omit-xml-declaration="yes" method="text" encoding="UTF-8" media-type="application/json"/>
 	<xsl:strip-space elements="*"/>
   <!--default to no output-->
