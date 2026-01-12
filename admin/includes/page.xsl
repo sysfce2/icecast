@@ -12,7 +12,7 @@
                 <xsl:with-param name="title" select="$title" />
             </xsl:call-template>
 
-            <body>
+            <body class="admin-page">
                 <!-- Header/Menu -->
                 <xsl:call-template name="header" />
 

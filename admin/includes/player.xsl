@@ -3,7 +3,7 @@
         <xsl:if test="not(allow-direct-access) or allow-direct-access = 'true'">
             <div>
                 <ul class="playlists">
-                    <li><a href="{@mount}">Direct</a></li>
+                    <li><a href="{@mount}">Stream URL</a></li>
                     <li><a href="{@mount}.m3u">M3U</a></li>
                     <li><a href="{@mount}.xspf">XSPF</a></li>
                 </ul>

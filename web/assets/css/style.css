@@ -33,6 +33,10 @@
     }
 }
 
+body:not(.admin-page) .playlists li:not(:first-child) {
+    display: none;
+}
+
 html, body {
     margin: 0;
     padding: 0;
