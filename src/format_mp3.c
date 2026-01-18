@@ -283,6 +283,7 @@ static void mp3_set_title(source_t *source)
 
     if (in_url_title) {
         url_title = util_conv_string(in_url_title, "UTF-8", charset);
+        ICECAST_LOG_DDEBUG("Converted % #H (UTF-8) to % #H (%s)", in_url_title, url_title, charset);
         if (url_title)
             len += strlen(url_title);
     }
