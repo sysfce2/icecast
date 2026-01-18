@@ -1942,7 +1942,7 @@ static void command_dashboard           (client_t *client, source_t *source, adm
         __reportxml_add_maintenance(reportnode, config->reportxml_db, "f68dd8a3-22b1-4118-aba6-b039f2c5b51e", "info", "Currently no sources are connected to this server.", NULL);
 
     if (has_legacy_sources)
-        __reportxml_add_maintenance(reportnode, config->reportxml_db, "a3a51986-3bba-42b9-ad5c-d9ecc9967320", "warning", "Legacy sources are connected. See mount list for details.", NULL);
+        __reportxml_add_maintenance(reportnode, config->reportxml_db, "a3a51986-3bba-42b9-ad5c-d9ecc9967320", "warning", "Legacy sources are connected. See source list for details.", NULL);
 
     if (has_too_many_clients) {
         __reportxml_add_maintenance(reportnode, config->reportxml_db, "08676614-50b4-4ea7-ba99-7c2ffcecf705", "warning", "More than 90% of the server's configured maximum clients are connected", NULL);
