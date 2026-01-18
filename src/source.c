@@ -1375,8 +1375,7 @@ void source_update_settings (ice_config_t *config, source_t *source, mount_proxy
 {
     thread_mutex_lock(&source->lock);
     /*  skip if source is a fallback to file */
-    if (source->running && source->client == NULL)
-    {
+    if (source->running && source->client == NULL) {
         stats_event_hidden (source->mount, NULL, 1);
         thread_mutex_unlock(&source->lock);
         return;
@@ -1386,7 +1385,7 @@ void source_update_settings (ice_config_t *config, source_t *source, mount_proxy
     source->timeout = config->source_timeout;
     source->burst_size = config->burst_size;
 
-    stats_event_args (source->mount, "listenurl", "http://%s:%d%s",
+    stats_event_args(source->mount, "listenurl", "http://%s:%d%s",
             config->hostname, config->port, source->mount);
 
     source_apply_mount (config, source, mountinfo);
@@ -1397,30 +1396,27 @@ void source_update_settings (ice_config_t *config, source_t *source, mount_proxy
         ICECAST_LOG_DEBUG("intro file is %s", mountinfo->intro_filename);
     if (source->dumpfilename)
         ICECAST_LOG_DEBUG("Dumping stream to %s", source->dumpfilename);
-    if (source->on_demand)
-    {
+    if (source->on_demand) {
         ICECAST_LOG_DEBUG("on_demand set");
-        stats_event (source->mount, "on_demand", "1");
-        stats_event_args (source->mount, "listeners", "%ld", source->listeners);
+        stats_event(source->mount, "on_demand", "1");
+        stats_event_args(source->mount, "listeners", "%ld", source->listeners);
+    } else {
+        stats_event(source->mount, "on_demand", NULL);
     }
-    else
-        stats_event (source->mount, "on_demand", NULL);
 
-    if (source->hidden)
-    {
-        stats_event_hidden (source->mount, NULL, 1);
+    if (source->hidden) {
+        stats_event_hidden(source->mount, NULL, 1);
         ICECAST_LOG_DEBUG("hidden from public");
+    } else {
+        stats_event_hidden(source->mount, NULL, 0);
     }
-    else
-        stats_event_hidden (source->mount, NULL, 0);
 
-    if (source->max_listeners == -1)
-        stats_event (source->mount, "max_listeners", "unlimited");
-    else
-    {
-        char buf [10];
-        snprintf (buf, sizeof (buf), "%ld", source->max_listeners);
-        stats_event (source->mount, "max_listeners", buf);
+    if (source->max_listeners == -1) {
+        stats_event(source->mount, "max_listeners", "unlimited");
+    } else {
+        char buf[10];
+        snprintf(buf, sizeof (buf), "%ld", source->max_listeners);
+        stats_event(source->mount, "max_listeners", buf);
     }
     ICECAST_LOG_DEBUG("public set to %d", source->yp_public);
     ICECAST_LOG_DEBUG("max listeners to %ld", source->max_listeners);
