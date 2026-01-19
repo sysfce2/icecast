@@ -1269,6 +1269,10 @@ static void source_apply_mount (ice_config_t *config, source_t *source, mount_pr
         source->flags |= SOURCE_FLAG_NO_LANGUAGE;
     }
 
+    if (!(mountinfo && mountinfo->charset && strcasecmp(mountinfo->charset, "UTF-8") == 0)) {
+        source->flags |= SOURCE_FLAG_NOT_UTF_8;
+    }
+
     /* handle MIME-type */
     if (mountinfo && mountinfo->type)
         stats_event (source->mount, "server_type", mountinfo->type);
@@ -1643,7 +1647,12 @@ void source_kill_dumpfile(source_t *source)
 
 health_t source_get_health(source_t *source)
 {
-    const source_flags_t flags = source->flags;
+    source_flags_t flags = source->flags;
+
+    /* Clear not UTF-8 flag on non-generic sources */
+    if (!(flags & SOURCE_FLAG_FORMAT_GENERIC))
+        flags &= ~SOURCE_FLAG_NOT_UTF_8;
+
     return source_get_health_by_flags(flags);
 }
 
@@ -1655,6 +1664,9 @@ health_t source_get_health_by_flags(source_flags_t flags)
         health = health_atbest(health, HEALTH_ERROR);
 
     if (flags & SOURCE_FLAG_FORMAT_GENERIC)
+        health = health_atbest(health, HEALTH_WARNING);
+
+    if (flags & SOURCE_FLAG_NOT_UTF_8)
         health = health_atbest(health, HEALTH_WARNING);
 
     if (flags & SOURCE_FLAG_LEGACY_METADATA)
